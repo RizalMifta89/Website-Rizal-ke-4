@@ -7,146 +7,148 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-        }
-        .douyin-btn {
-            background: linear-gradient(90deg, #FE2C55 0%, #25F4EE 100%);
-        }
-        /* Animasi Fade In sederhana */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
+        .gradient-bg { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); }
+        .glass-panel { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); }
+        .douyin-btn { background: linear-gradient(90deg, #FE2C55 0%, #25F4EE 100%); }
     </style>
 </head>
 <body class="gradient-bg min-h-screen text-white font-sans flex items-center justify-center p-4">
 
-    <div class="max-w-md w-full bg-gray-900 rounded-2xl shadow-2xl p-8 border border-gray-800">
+    <div class="max-w-md w-full glass-panel rounded-2xl shadow-2xl p-8 border border-gray-700">
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold mb-2"><i class="fab fa-tiktok"></i> Douyin Saver</h1>
-            <p class="text-gray-400 text-sm">Download video Douyin Tanpa Watermark & Original Quality</p>
+            <h1 class="text-3xl font-bold mb-2 tracking-wide"><i class="fab fa-tiktok"></i> Douyin Saver</h1>
+            <p class="text-gray-400 text-xs uppercase tracking-widest">Download Tanpa Watermark</p>
         </div>
 
-        <div class="space-y-4">
-            <div class="relative">
-                <textarea id="urlInput" 
-                    class="w-full bg-gray-800 border border-gray-700 rounded-xl p-4 text-white focus:outline-none focus:border-cyan-400 transition h-32 text-sm"
-                    placeholder="Tempel link Douyin disini... (Contoh: 7.89 05/01 n@n.du...)"></textarea>
-                <div class="absolute bottom-3 right-3 text-xs text-gray-500" id="statusText">Menunggu input...</div>
+        <form id="downloaderForm" class="space-y-5">
+            <div class="relative group">
+                <textarea id="urlInput" required
+                    class="w-full bg-gray-900/50 border border-gray-600 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition h-32 text-sm resize-none"
+                    placeholder="Tempel link Douyin disini..."></textarea>
+                <div id="statusText" class="absolute bottom-3 right-3 text-xs text-gray-500 font-mono">Ready</div>
             </div>
 
-            <button type="button" onclick="processVideo()" id="downloadBtn" 
-                class="w-full douyin-btn py-3 rounded-xl font-bold text-black hover:opacity-90 transition transform hover:scale-[1.02] shadow-lg cursor-pointer">
-                <i class="fas fa-download mr-2"></i> PROSES VIDEO
+            <button type="submit" id="submitBtn"
+                class="w-full douyin-btn py-3.5 rounded-xl font-bold text-gray-900 hover:opacity-90 transition transform active:scale-95 shadow-lg flex justify-center items-center gap-2">
+                <span>PROSES VIDEO</span> <i class="fas fa-arrow-right"></i>
             </button>
+        </form>
+
+        <div id="loadingState" class="hidden mt-8 text-center space-y-3">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-400"></div>
+            <p class="text-cyan-400 text-sm animate-pulse">Sedang mencari video...</p>
         </div>
 
-        <div id="loading" class="hidden mt-6 text-center">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-400 mx-auto"></div>
-            <p class="text-gray-400 text-sm mt-2">Sedang mengekstrak video...</p>
-        </div>
-
-        <div id="resultArea" class="hidden mt-6 bg-gray-800 rounded-xl p-4 border border-gray-700 animate-fade-in">
-            <p class="text-sm text-green-400 mb-2 font-semibold"><i class="fas fa-check-circle"></i> Video Ditemukan!</p>
-            
-            <div class="flex flex-col gap-3">
-                <a id="btnNoWatermark" href="#" target="_blank" 
-                   class="block w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm text-center transition decoration-none">
-                   <i class="fas fa-video mr-2"></i> Download Tanpa Watermark
-                </a>
-                
-                <a id="btnOriginal" href="#" target="_blank" 
-                   class="block w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm text-center transition decoration-none">
-                   <i class="fas fa-file-video mr-2"></i> Download Original (Raw)
-                </a>
+        <div id="resultArea" class="hidden mt-8 space-y-4 animate-fade-in">
+            <div class="bg-gray-800/80 rounded-lg p-4 border border-green-500/30">
+                <p class="text-green-400 text-sm font-semibold flex items-center gap-2">
+                    <i class="fas fa-check-circle"></i> Video Ditemukan
+                </p>
             </div>
             
-            <p class="text-xs text-gray-500 mt-4 text-center">
-                Jika video berputar otomatis: <br> Klik Kanan -> "Save Video As" / "Simpan Video"
-            </p>
+            <div class="grid grid-cols-1 gap-3">
+                <a id="linkNoWatermark" href="#" target="_blank" class="text-center w-full bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg text-sm transition border border-gray-600 hover:border-gray-500">
+                    <i class="fas fa-download text-cyan-400 mr-2"></i> Tanpa Watermark
+                </a>
+                <a id="linkOriginal" href="#" target="_blank" class="text-center w-full bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg text-sm transition border border-gray-600 hover:border-gray-500">
+                    <i class="fas fa-film text-pink-500 mr-2"></i> Original (Raw)
+                </a>
+            </div>
         </div>
     </div>
 
     <script>
-        // URL Backend
+        // --- KONFIGURASI ---
         const API_URL = "https://mesin-website-rizal-ke-4.onrender.com/api/process";
 
-        async function processVideo() {
-            const inputRaw = document.getElementById('urlInput').value;
-            const loading = document.getElementById('loading');
-            const resultArea = document.getElementById('resultArea');
-            const btn = document.getElementById('downloadBtn');
-            const statusText = document.getElementById('statusText');
+        // --- REFERENSI DOM ---
+        const form = document.getElementById('downloaderForm');
+        const input = document.getElementById('urlInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingState = document.getElementById('loadingState');
+        const resultArea = document.getElementById('resultArea');
+        const statusText = document.getElementById('statusText');
 
-            if (!inputRaw.trim()) {
-                statusText.innerText = "Link tidak boleh kosong!";
-                statusText.className = "absolute bottom-3 right-3 text-xs text-red-500";
-                return;
-            }
+        // --- LOGIKA UTAMA ---
+        // Kita menggunakan event listener 'submit' pada form.
+        // Ini adalah cara paling aman mencegah reload.
+        form.addEventListener('submit', async function(e) {
+            // 1. STOP RELOAD SEKETIKA
+            e.preventDefault(); 
+            
+            // Debugging: Cek apakah fungsi jalan
+            console.log("Tombol ditekan, memulai proses...");
 
-            // UI State: Loading
-            loading.classList.remove('hidden');
+            const rawText = input.value;
+            if (!rawText.trim()) return;
+
+            // UI: Ganti ke mode Loading
+            setLoading(true);
             resultArea.classList.add('hidden');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
 
             try {
-                // 1. Regex Cleaning (Frontend side)
+                // 2. Bersihkan URL (Regex)
                 const urlPattern = /(https?:\/\/(?:www\.|v\.)?douyin\.com\/[a-zA-Z0-9\/]+)/;
-                const match = inputRaw.match(urlPattern);
-                const cleanUrl = match ? match[0] : inputRaw; 
+                const match = rawText.match(urlPattern);
+                const cleanUrl = match ? match[0] : rawText;
 
-                // 2. Kirim ke Backend
+                console.log("Mengirim URL:", cleanUrl);
+
+                // 3. Fetch ke Backend
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url: cleanUrl })
                 });
 
                 const data = await response.json();
 
-                if (!response.ok) {
-                    throw new Error(data.detail || "Gagal menghubungi server");
-                }
+                if (!response.ok) throw new Error(data.detail || "Gagal mengambil data");
 
-                // 3. Tampilkan Hasil
-                if(data.video_data) {
-                    document.getElementById('btnNoWatermark').href = data.video_data.nwm_video_url || '#';
-                    document.getElementById('btnOriginal').href = data.video_data.raw_video_url || '#';
+                // 4. Tampilkan Hasil
+                if (data.video_data) {
+                    document.getElementById('linkNoWatermark').href = data.video_data.nwm_video_url;
+                    document.getElementById('linkOriginal').href = data.video_data.raw_video_url;
                     resultArea.classList.remove('hidden');
+                    statusText.innerText = "Selesai ✅";
+                    statusText.className = "absolute bottom-3 right-3 text-xs text-green-400 font-mono";
                 } else {
-                    throw new Error("Video tidak ditemukan dalam respon server");
+                    throw new Error("Link video tidak ditemukan");
                 }
 
             } catch (error) {
-                console.error(error);
+                console.error("Error:", error);
                 alert("Gagal: " + error.message);
+                statusText.innerText = "Error ❌";
+                statusText.className = "absolute bottom-3 right-3 text-xs text-red-400 font-mono";
             } finally {
-                // Reset UI State
-                loading.classList.add('hidden');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-download mr-2"></i> PROSES VIDEO';
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                setLoading(false);
+            }
+        });
+
+        // --- FUNGSI BANTUAN ---
+        function setLoading(isLoading) {
+            if (isLoading) {
+                loadingState.classList.remove('hidden');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                loadingState.classList.add('hidden');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>PROSES VIDEO</span> <i class="fas fa-arrow-right"></i>';
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         }
 
-        // Auto detect URL
-        document.getElementById('urlInput').addEventListener('input', function(e) {
-            const val = e.target.value;
-            const urlPattern = /(https?:\/\/(?:www\.|v\.)?douyin\.com\/[a-zA-Z0-9\/]+)/;
-            if (urlPattern.test(val)) {
-                document.getElementById('statusText').innerText = "URL Douyin terdeteksi ✅";
-                document.getElementById('statusText').className = "absolute bottom-3 right-3 text-xs text-green-400";
+        // --- AUTO DETECT TEXT ---
+        input.addEventListener('input', (e) => {
+            if (e.target.value.includes('douyin.com')) {
+                statusText.innerText = "Douyin Detected ⚡";
+                statusText.className = "absolute bottom-3 right-3 text-xs text-cyan-400 font-bold animate-pulse";
             } else {
-                document.getElementById('statusText').innerText = "Menunggu URL valid...";
-                document.getElementById('statusText').className = "absolute bottom-3 right-3 text-xs text-gray-500";
+                statusText.innerText = "Ready";
+                statusText.className = "absolute bottom-3 right-3 text-xs text-gray-500 font-mono";
             }
         });
     </script>
