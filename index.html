@@ -13,6 +13,14 @@
         .douyin-btn {
             background: linear-gradient(90deg, #FE2C55 0%, #25F4EE 100%);
         }
+        /* Animasi Fade In sederhana */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
     </style>
 </head>
 <body class="gradient-bg min-h-screen text-white font-sans flex items-center justify-center p-4">
@@ -31,8 +39,8 @@
                 <div class="absolute bottom-3 right-3 text-xs text-gray-500" id="statusText">Menunggu input...</div>
             </div>
 
-            <button onclick="processVideo()" id="downloadBtn" 
-                class="w-full douyin-btn py-3 rounded-xl font-bold text-black hover:opacity-90 transition transform hover:scale-[1.02] shadow-lg">
+            <button type="button" onclick="processVideo()" id="downloadBtn" 
+                class="w-full douyin-btn py-3 rounded-xl font-bold text-black hover:opacity-90 transition transform hover:scale-[1.02] shadow-lg cursor-pointer">
                 <i class="fas fa-download mr-2"></i> PROSES VIDEO
             </button>
         </div>
@@ -47,22 +55,24 @@
             
             <div class="flex flex-col gap-3">
                 <a id="btnNoWatermark" href="#" target="_blank" 
-                   class="block w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm text-center transition">
+                   class="block w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm text-center transition decoration-none">
                    <i class="fas fa-video mr-2"></i> Download Tanpa Watermark
                 </a>
                 
                 <a id="btnOriginal" href="#" target="_blank" 
-                   class="block w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm text-center transition">
+                   class="block w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm text-center transition decoration-none">
                    <i class="fas fa-file-video mr-2"></i> Download Original (Raw)
                 </a>
             </div>
             
-            <p class="text-xs text-gray-500 mt-4 text-center">Klik kanan > "Save Video As" jika video berputar otomatis.</p>
+            <p class="text-xs text-gray-500 mt-4 text-center">
+                Jika video berputar otomatis: <br> Klik Kanan -> "Save Video As" / "Simpan Video"
+            </p>
         </div>
     </div>
 
     <script>
-        // URL Backend Anda
+        // URL Backend
         const API_URL = "https://mesin-website-rizal-ke-4.onrender.com/api/process";
 
         async function processVideo() {
@@ -70,9 +80,11 @@
             const loading = document.getElementById('loading');
             const resultArea = document.getElementById('resultArea');
             const btn = document.getElementById('downloadBtn');
+            const statusText = document.getElementById('statusText');
 
-            if (!inputRaw) {
-                alert("Silakan masukkan link Douyin dulu!");
+            if (!inputRaw.trim()) {
+                statusText.innerText = "Link tidak boleh kosong!";
+                statusText.className = "absolute bottom-3 right-3 text-xs text-red-500";
                 return;
             }
 
@@ -80,11 +92,11 @@
             loading.classList.remove('hidden');
             resultArea.classList.add('hidden');
             btn.disabled = true;
-            btn.innerHTML = "Memproses...";
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
 
             try {
-                // 1. Regex Cleaning di sisi Client (Frontend)
-                // Ini menangkap URL yang dimulai dengan http/https di tengah teks sampah
+                // 1. Regex Cleaning (Frontend side)
                 const urlPattern = /(https?:\/\/(?:www\.|v\.)?douyin\.com\/[a-zA-Z0-9\/]+)/;
                 const match = inputRaw.match(urlPattern);
                 const cleanUrl = match ? match[0] : inputRaw; 
@@ -101,7 +113,7 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.detail || "Gagal memproses video");
+                    throw new Error(data.detail || "Gagal menghubungi server");
                 }
 
                 // 3. Tampilkan Hasil
@@ -110,20 +122,22 @@
                     document.getElementById('btnOriginal').href = data.video_data.raw_video_url || '#';
                     resultArea.classList.remove('hidden');
                 } else {
-                    alert("Video tidak ditemukan. Coba lagi.");
+                    throw new Error("Video tidak ditemukan dalam respon server");
                 }
 
             } catch (error) {
                 console.error(error);
-                alert("Terjadi kesalahan: " + error.message);
+                alert("Gagal: " + error.message);
             } finally {
+                // Reset UI State
                 loading.classList.add('hidden');
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-download mr-2"></i> PROSES VIDEO';
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         }
 
-        // Auto detect URL saat user paste
+        // Auto detect URL
         document.getElementById('urlInput').addEventListener('input', function(e) {
             const val = e.target.value;
             const urlPattern = /(https?:\/\/(?:www\.|v\.)?douyin\.com\/[a-zA-Z0-9\/]+)/;
