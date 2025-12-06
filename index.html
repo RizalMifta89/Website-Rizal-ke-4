@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Douyin Downloader Tanpa Watermark</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="https://fav.farm/🔥" />
+</head>
+<body class="min-h-screen bg-gray-900 text-white flex items-center justify-center p-5">
+  <div class="w-full max-w-2xl">
+    <h1 class="text-4xl font-bold text-center mb-2">Douyin Downloader</h1>
+    <p class="text-center text-gray-400 mb-8">Tanpa watermark • Original/raw • Semua kualitas</p>
+
+    <div class="bg-gray-800 rounded-2xl p-8 shadow-2xl">
+      <div class="mb-6">
+        <input type="text" id="urlInput" placeholder="Paste link Douyin di sini..."
+          class="w-full px-5 py-4 bg-gray-700 rounded-xl focus:outline-none focus:ring-4 focus:ring-red-500 text-lg"/>
+      </div>
+
+      <button id="analyzeBtn" class="w-full bg-red-600 hover:bg-red-700 py-4 rounded-xl font-bold text-lg transition">
+        Analisa Video
+      </button>
+
+      <div id="loading" class="hidden mt-6 text-center">
+        <div class="inline-block animate-spin w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full"></div>
+        <p class="mt-3">Mengambil data video...</p>
+      </div>
+
+      <div id="result" class="hidden mt-8 space-y-6">
+        <div class="flex items-center gap-4 flex-wrap">
+          <img id="thumbnail" class="w-32 h-32 object-cover rounded-xl" />
+          <div>
+            <p id="desc" class="text-lg font-medium"></p>
+            <p class="text-gray-400 text-sm">by @<span id="author"></span></p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <button class="quality-btn bg-green-600 hover:bg-green-700 py-4 rounded-xl font-bold" data-type="nowm">
+            Tanpa Watermark (HD)
+          </button>
+          <button class="quality-btn bg-blue-600 hover:bg-blue-700 py-4 rounded-xl font-bold" data-type="raw">
+            Original / Raw (HD)
+          </button>
+          <button class="quality-btn bg-purple-600 hover:bg-purple-700 py-4 rounded-xl font-bold" data-type="nowm_sd">
+            Tanpa Watermark (SD)
+          </button>
+          <button class="quality-btn bg-orange-600 hover:bg-orange-700 py-4 rounded-xl font-bold" data-type="music">
+            Download Musik (MP3)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-center text-gray-500 text-sm mt-10">
+      100% gratis • Tanpa iklan • Dibuat dengan ❤️
+    </p>
+  </div>
+
+  <script>
+    const BACKEND = "https://mesin-website-rizal-ke-4.onrender.com";
+
+    // Otomatis bersihkan URL Douyin yang penuh karakter China
+    function cleanDouyinUrl(url) {
+      try {
+        const u = new URL(url);
+        if (u.hostname.includes("douyin.com") || u.hostname === "www.iesdouyin.com") {
+          const path = u.pathname + u.search;
+          const match = path.match(/(\/video\/|\/photo\/|aweme\/v1\/play\/.*?aweme_id=)(\d+)/);
+          if (match) {
+            const id = match[2];
+            return `https://www.douyin.com/video/${id}`;
+          }
+        }
+      } catch {}
+      return url.trim();
+    }
+
+    document.getElementById("analyzeBtn").addEventListener("click", async () => {
+      let rawUrl = document.getElementById("urlInput").value.trim();
+      if (!rawUrl) return alert("Masukkan link Douyin dulu!");
+
+      const url = cleanDouyinUrl(rawUrl);
+      document.getElementById("loading").classList.remove("hidden");
+      document.getElementById("result").classList.add("hidden");
+
+      try {
+        const res = await fetch(`${BACKEND}/analyze?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+
+        if (data.error) throw new Error(data.error);
+
+        document.getElementById("thumbnail").src = data.cover;
+        document.getElementById("desc").textContent = data.desc || "Tanpa deskripsi";
+        document.getElementById("author").textContent = data.author;
+
+        document.querySelectorAll(".quality-btn").forEach(btn => {
+          btn.onclick = () => {
+            const type = btn.dataset.type;
+            const dlUrl = `${BACKEND}/download?url=${encodeURIComponent(url)}&type=${type}`;
+            window.open(dlUrl, "_blank");
+          };
+        });
+
+        document.getElementById("result").classList.remove("hidden");
+      } catch (e) {
+        alert("Gagal mengambil video: " + e.message);
+      } finally {
+        document.getElementById("loading").classList.add("hidden");
+      }
+    });
+  </script>
+</body>
+</html>
